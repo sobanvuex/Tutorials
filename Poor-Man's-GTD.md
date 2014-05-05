@@ -7,4 +7,4 @@ Global Traffic Directing is a way to redirect users to the closest geographicall
 This way users from Asia would be served by servers in Asia and users in Europe by servers in Europe.
 
 Most if not all major DNS providers support this feature, but it sometimes is too expensive.
-This tutorial will explain how you can setup "poor man's gtd" using Nginx, GeoIP and Subdomains.
+This tutorial will explain how you can setup "poor man's GTD" using Nginx, GeoIP and Subdomains.
