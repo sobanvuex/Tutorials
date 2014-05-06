@@ -9,7 +9,6 @@ This way users from Asia would be served by servers in Asia and users in Europe 
 > Most if not all major DNS providers support this feature, but it sometimes is too expensive.
 This tutorial will explain how you can setup "poor man's GTD" using Nginx, GeoIP and Subdomains.
 
-
 ### Introduction
 
 So often you have a website which is hosted in one location, as your customer base grows so does the distance between your server(s) and your customers. We all know that if your server load increases - you scale. But what to do when the distance is the problem. Well the solution is simple - install server(s) in geographical locations closer to your customer base and direct them based on their location. But how to do this easy and cheap? Let me show you.
@@ -18,7 +17,7 @@ In this guide we're going to configure Nginx to detect and redirect customers to
 
 ### Prerequisites
 
-To complete this guide you will need a user with `sudo` privileges. One or more servers, where the additional ones are in different regions.
+To complete this guide you will need a user with `sudo` privileges. You also need to know how create servers in different regions. As well as one or more servers, where the additional ones are in different regions.
 
 ### Assumptions
 
@@ -34,16 +33,15 @@ In this tutorial we are going to have a few assumptions:
 
 ### Step 1 - Subdomains and DNS configuration
 
-Choosing subdomains is all up to you. For this tutorial lets use `na.example.com` for US, `eu.example.com` for Europe and `as.example.com` for Asia.
+Choosing subdomains is all up to you. For this tutorial lets use `eu.example.com` for Europe and `as.example.com` for Asia.
 
 For each of those subdomains add a `A record` in your DNS configuration with the IP of the server for that region:
-- `na.example.com` - `1.1.1.1`
 - `eu.example.com` - `1.1.1.2`
 - `as.example.com` - `1.1.1.3`
 
 It should look something like this:
 
-![dns](https://cloud.githubusercontent.com/assets/711758/2891198/6098696c-d530-11e3-9ef3-fee7a1ac37d5.jpg)
+![dns](https://cloud.githubusercontent.com/assets/711758/2893317/2eb11266-d547-11e3-84e4-0cafcb3e7d78.jpg)
 
 ### Step 2 - Install Nginx and GeoIP
 
@@ -72,11 +70,8 @@ Open your `nginx.conf` (default `/etc/nginx/nginx.conf`) with your preferred edi
 
 ```
 http {
-
   geoip_city /usr/share/GeoIP/GeoLiteCity.dat;
-
   ...
-
 }
 ```
 
@@ -88,13 +83,9 @@ The `map` in Nginx allows us to set a variable `$closest_server` based on the va
 
 ```
 map $geoip_city_continent_code $closest_server {
-
   default www.example.com;
-
-  NA      na.example.com;
   EU      eu.example.com;
   AS      as.example.com;
-
 }
 ```
 
@@ -102,15 +93,11 @@ Next we add the location based subdomains to the `$server_name` directive:
 
 ```
 server {
-
   server_name example.com
               www.example.com
-              na.example.com
               eu.example.com
               as.example.com;
-
   ...
-
 }
 ```
 
@@ -118,7 +105,6 @@ The last part of the process is to make a condition in your virtual host to redi
 
 ```
 server {
-
   ...
 
   if ($closest_server != $host) {
@@ -126,7 +112,6 @@ server {
   }
 
   ...
-
 }
 ```
 
@@ -134,20 +119,14 @@ After you're done with all the changes your virtual host file would look like th
 
 ```
 map $geoip_city_continent_code $closest_server {
-
   default www.example.com;
-
-  NA      na.example.com;
   EU      eu.example.com;
   AS      as.example.com;
-
 }
 
 server {
-
   server_name example.com
               www.example.com
-              na.example.com
               eu.example.com
               as.example.com;
 
@@ -156,11 +135,10 @@ server {
   }
 
   ...
-
 }
 ```
 
-** Repeat this step for each server you want to configure. That way any server will will act as a traffic director. **
+**Repeat this step for each server you want to configure. That way all of your servers will act as a traffic director.**
 
 ### Step 5 - Run a few tests
 
@@ -174,12 +152,8 @@ If everything is good - Reload your Nginx configuration:
 
 To see your traffic director in action. Open a browser and visit `www.example.com`:
 
-![www](https://cloud.githubusercontent.com/assets/711758/2891968/f44a1456-d537-11e3-921b-8cb1afb34229.jpg)
+If you visit the site using a proxy in Europe you would be immediately redirected to `eu.example.com`:
 
-In my case (Canada) I am immediately redirected to `na.example.com`:
-
-![na](https://cloud.githubusercontent.com/assets/711758/2891967/f4435486-d537-11e3-80af-e35986515074.jpg)
-
-Using a VPN/Proxy of choice I advise you to test your other regions as well.
+If you visit the site using a proxy in Asia you would be immediately redirected to `as.example.com`:
 
 And from now on your global visitors will be immediately redirected to a server close to them, improving their experience on your website.
